@@ -1,8 +1,9 @@
 import { User } from "../models/user.model.js";
+import { getIO } from "../socketio.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().sort({ points: -1 });
+    const users = await User.find();
     res.status(200).json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -21,6 +22,9 @@ export const addUser = async (req, res) => {
 
     const newUser = new User({ name });
     await newUser.save();
+
+    // Emit event to update user list on all clients
+    getIO().emit("user-added", newUser);
 
     res.status(201).json(newUser);
   } catch (error) {

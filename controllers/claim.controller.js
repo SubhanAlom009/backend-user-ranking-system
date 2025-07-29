@@ -1,5 +1,6 @@
 import { ClaimHistory } from "../models/claimHistory.model.js";
 import { User } from "../models/user.model.js";
+import { getIO } from "../socketio.js";
 
 export const claimPoints = async (req, res) => {
   try {
@@ -20,6 +21,14 @@ export const claimPoints = async (req, res) => {
     });
     await history.save();
 
+    // Emit event to update leaderboard on all clients
+    getIO().emit("points-claimed", {
+      userId: user._id,
+      name: user.name,
+      totalPoints: user.totalPoints,
+      claimedPoints: randomPoints,
+    });
+
     res.status(200).json({
       message: "Points claimed successfully",
       user,
@@ -33,7 +42,7 @@ export const claimPoints = async (req, res) => {
 
 export const getLeaderboard = async (req, res) => {
   try {
-    const users = await User.find().sort({ totalPoints: -1 }).limit(10);
+    const users = await User.find().sort({ totalPoints: -1 });
 
     const leaderboard = users.map((user, index) => ({
       rank: index + 1,

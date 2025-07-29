@@ -1,11 +1,13 @@
 import app from "./app.js";
 import http from "http";
 import { connectDB } from "./DB/connectDB.js";
+import { setupSocket } from "./socketio.js"; // <-- import
 
 const PORT = process.env.PORT || 3000;
 
 const server = http.createServer(app);
 
+setupSocket(server);
 connectDB()
   .then(() => {
     server.listen(PORT, () => {
@@ -14,5 +16,5 @@ connectDB()
   })
   .catch((error) => {
     console.error("Failed to connect to the database:", error);
-    process.exit(1); // Exit the process if the database connection fails
+    process.exit(1);
   });
